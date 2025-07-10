@@ -10,6 +10,10 @@ add_library(Vector STATIC vector.c)
 #Add your production code as a library
 add_library(Calc STATIC ptr_calc.c)
 
+add_executable(CalcExe ptr_calc.c)
+target_link_libraries(CalcExe Calc m)
+target_compile_definitions(CalcExe PRIVATE IS_EXE)
+
 #Add Unity from the submodule
 add_library(Unity STATIC ../../external/unity/src/unity.c)
 target_include_directories(Unity PUBLIC ../../external/unity/src)
@@ -19,7 +23,7 @@ add_executable(VectorTest ../../test/week01/test_vector.c)
 target_link_libraries(VectorTest Vector Unity)
 
 add_executable(CalcTest ../../test/week01/test_calc.c)
-target_link_libraries(CalcTest Calc Unity)
+target_link_libraries(CalcTest Calc Unity m)
 
 #Register the tests with CTest
 add_test(NAME VectorTest COMMAND VectorTest)

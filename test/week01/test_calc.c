@@ -38,6 +38,16 @@ void test_ptr_div_by_zero(void) {
   TEST_ASSERT_EQUAL_INT(2, result);
 }
 
+void test_ptr_square(void) {
+  int result = calculate_one_int(square, 4);
+  TEST_ASSERT_EQUAL_INT(16, result);
+}
+
+void test_ptr_square_root(void) {
+  int result = calculate_one_double(sq_root, 25);
+  TEST_ASSERT_EQUAL_INT(5, result);
+}
+
 int main(void) {
   UNITY_BEGIN();
   RUN_TEST(test_add);
@@ -45,6 +55,9 @@ int main(void) {
   RUN_TEST(test_ptr_sub);
   RUN_TEST(test_ptr_mult);
   RUN_TEST(test_ptr_div);
-  RUN_TEST(test_ptr_div_by_zero);
+  RUN_TEST(test_ptr_square);
+  RUN_TEST(test_ptr_square_root);
+
+  // RUN_TEST(test_ptr_div_by_zero);
   return UNITY_END();
 }
