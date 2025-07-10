@@ -1,0 +1,21 @@
+#include "../../external/unity/src/unity.h"
+#include "../../src/week01/reverse.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+char *str1;
+char *str2;
+char *str3;
+
+void setUp(void) {}
+
+void tearDown(void) {}
+
+void test_swap() {}
+
+int main(void) {
+  UNITY_BEGIN();
+  RUN_TEST(test_swap);
+  return UNITY_END();
+}
