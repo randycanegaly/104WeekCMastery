@@ -8,31 +8,48 @@
 #define COLS 2
 #define FILL 'q'
 
-void setUp(void) {}
+Darray *darray;
+
+void setUp(void) { darray = init(ROWS, COLS); }
 
 void tearDown(void) {}
 
 void test_init() {
-  char **result = init(ROWS, COLS);
-  TEST_ASSERT_NOT_NULL(result);
+  TEST_ASSERT_NOT_NULL(darray);
+  TEST_ASSERT_EQUAL_INT(ROWS, darray->rows);
+  TEST_ASSERT_EQUAL_INT(COLS, darray->cols);
 }
 
 void test_fill() {
-  char **result = init(ROWS, COLS);
-  TEST_ASSERT_NOT_NULL(result);
-  fill(result, ROWS, COLS, FILL);
-  TEST_ASSERT_EQUAL_CHAR(FILL, **result);
+  fill(darray, ROWS, COLS, FILL);
   for (int i = 0; i < ROWS; i++) {
-    printf("%c\n", *(*result + i));
-    TEST_ASSERT_EQUAL_CHAR('q', *(*result + i));
-    //*result points to the first char of the row. *result + i moves
-    // along the row. *(*result + i) gets the char value there
+    char *row = *darray->array;
+    for (int j = 0; j < COLS; j++) {
+      TEST_ASSERT_EQUAL_CHAR(FILL, *(row + j));
+    }
   }
+}
+
+void test_resize() {
+  int new_rows = ROWS * 2;
+  int new_cols = COLS * 2;
+
+  fill(darray, ROWS, COLS, FILL);
+  resize(darray, new_rows, new_cols);
+  for (int i = 0; i < new_rows; i++) {
+    for (int j = 0; j < new_cols; j++) {
+      printf("at row: %d, col: %d, value: %c\n", i, j, darray->array[i][j]);
+    }
+  }
+
+  TEST_ASSERT_EQUAL_INT(ROWS * 3, darray->rows);
+  TEST_ASSERT_EQUAL_INT(COLS * 3, darray->cols);
 }
 
 int main(void) {
   UNITY_BEGIN();
   RUN_TEST(test_init);
   RUN_TEST(test_fill);
+  RUN_TEST(test_resize);
   return UNITY_END();
 }

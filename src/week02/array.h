@@ -2,7 +2,8 @@ typedef struct {
   int rows;
   int cols;
   char **array;
-} DynArray;
+} Darray;
 
-DynArray *init(int rows, int cols);
-void fill(char **arr, int rows, int cols, char fill);
+Darray *init(int rows, int cols);
+void fill(Darray *darray, int rows, int cols, char fill);
+void resize(Darray *darray, int new_rows, int new_cols);
