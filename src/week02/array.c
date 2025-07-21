@@ -7,10 +7,14 @@
 
 Darray *init(int rows, int cols) {
   Darray *darray = (Darray *)malloc(sizeof(Darray));
-
-  darray->array = (char **)malloc(sizeof(char *) * rows);
   if (darray == NULL)
     return NULL;
+
+  darray->array = (char **)malloc(sizeof(char *) * rows);
+  if (darray == NULL) {
+    free(darray);
+    return NULL;
+  }
 
   for (int i = 0; i < rows; i++) {
     *(darray->array + i) = (char *)calloc(cols, sizeof(char));
@@ -45,8 +49,20 @@ void fill(Darray *darray, char fill) {
 }
 
 void resize(Darray *darray, int new_rows, int new_cols) {
-  // 1. Reallocate memory for the new size (new_rows) of
-  // the array of char* pointers (each points to the front of the row of chars)
+  /*
+   Cases:
+   1. more rows, columns same
+   2. fewer rows, columns same
+   3. more rows, columns fewer
+   4. more rows, columns more
+   5. fewer rows, columns fewer
+   6. fewer rows, columns more
+  */
+
+  /*
+  Cases 1 and 2
+  These next lines grow or shrink the array of char pointers as needed
+  */
   char **temp_array = realloc(darray->array, sizeof(char *) * new_rows);
   if (temp_array == NULL) {
     // Handle error: realloc failed. All bets are off.
@@ -55,13 +71,7 @@ void resize(Darray *darray, int new_rows, int new_cols) {
   }
   darray->array = temp_array;
 
-  // 2. Walk the new length of the array of row pointers
-  // and reallocate memory for the new length (new_cols) for each row
-  // Cases:
-  // A. More rows - allocate additional rows and initialize them
-  // B. Fewer rows - free the extra rows
-  // C. New row length, reallocate the row to the new size
-  // A
+  // Case 1
   if (new_rows > darray->rows) {
     // New rows added. Allocate memory for them
     for (int i = darray->rows; i < new_rows; i++) {
@@ -79,9 +89,16 @@ void resize(Darray *darray, int new_rows, int new_cols) {
     }
   }
 
-  // Adjust (reallocate??) all rows to the new column number
-  // some of these may have already been done above but
-  // doing them again won't have any effect
+  /*Note: Cases 1 and 2 already took care of more rows vs. fewer rows.
+  So that cases 3 through 6 now consolidate to two cases:
+  A. more columns
+  B. fewer columns
+  */
+
+  // Case A
+  //  Adjust (reallocate??) all rows to the new column number
+  //  some of these may have already been done above but
+  //  doing them again won't have any effect
   for (int i = 0; i < new_rows; i++) {
     char *temp_row =
         (char *)realloc(*(darray->array + i), new_cols * sizeof(char));
@@ -95,7 +112,7 @@ void resize(Darray *darray, int new_rows, int new_cols) {
     // May have made row longer, realloc did not initialize new column elements
     // fill them
     if (new_cols > darray->cols) {
-      memset(*(darray->array) + darray->cols, 0, new_cols - darray->cols);
+      memset(*(darray->array + i) + darray->cols, 0, new_cols - darray->cols);
     }
   }
 
@@ -103,10 +120,28 @@ void resize(Darray *darray, int new_rows, int new_cols) {
   darray->cols = new_cols;
 }
 
+/*
+ * free all resources under the Darray
+ */
+void dfree(Darray *darray) {
+  if (darray != NULL) {
+    if (darray->array != NULL) {
+      for (int i = 0; i < darray->rows; i++) {
+        if (*(darray->array + i) != NULL) {
+          free(*(darray->array + i));
+        }
+      }
+    }
+    free(darray->array);
+    darray->array = NULL;
+  }
+}
+
 #ifdef IS_EXE
 int main(void) {
   Darray *darray = init(2, 2);
   fill(darray, 2, 2, 'x');
   resize(darray, 4, 4);
+  dfree(darray);
 }
 #endif /* ifdef IS_EXE */

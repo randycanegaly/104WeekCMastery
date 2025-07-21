@@ -21,7 +21,7 @@ void test_init() {
 }
 
 void test_fill() {
-  fill(darray, ROWS, COLS, FILL);
+  fill(darray, FILL);
   for (int i = 0; i < ROWS; i++) {
     char *row = *darray->array;
     for (int j = 0; j < COLS; j++) {
@@ -34,7 +34,7 @@ void test_resize() {
   int new_rows = ROWS * 2;
   int new_cols = COLS * 2;
 
-  fill(darray, ROWS, COLS, FILL);
+  fill(darray, FILL);
   resize(darray, new_rows, new_cols);
   for (int i = 0; i < new_rows; i++) {
     for (int j = 0; j < new_cols; j++) {
@@ -42,8 +42,14 @@ void test_resize() {
     }
   }
 
-  TEST_ASSERT_EQUAL_INT(ROWS * 3, darray->rows);
-  TEST_ASSERT_EQUAL_INT(COLS * 3, darray->cols);
+  TEST_ASSERT_EQUAL_INT(ROWS * 2, darray->rows);
+  TEST_ASSERT_EQUAL_INT(COLS * 2, darray->cols);
+}
+
+void test_free() {
+  fill(darray, FILL);
+  dfree(darray);
+  TEST_ASSERT_NULL(darray->array);
 }
 
 int main(void) {
@@ -51,5 +57,6 @@ int main(void) {
   RUN_TEST(test_init);
   RUN_TEST(test_fill);
   RUN_TEST(test_resize);
+  RUN_TEST(test_free);
   return UNITY_END();
 }
