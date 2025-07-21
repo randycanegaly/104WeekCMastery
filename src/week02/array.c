@@ -49,75 +49,110 @@ void fill(Darray *darray, char fill) {
 }
 
 void resize(Darray *darray, int new_rows, int new_cols) {
-  /*
-   Cases:
-   1. more rows, columns same
-   2. fewer rows, columns same
-   3. more rows, columns fewer
-   4. more rows, columns more
-   5. fewer rows, columns fewer
-   6. fewer rows, columns more
-  */
-
-  /*
-  Cases 1 and 2
-  These next lines grow or shrink the array of char pointers as needed
-  */
+  // resizes the array of char*s
   char **temp_array = realloc(darray->array, sizeof(char *) * new_rows);
   if (temp_array == NULL) {
-    // Handle error: realloc failed. All bets are off.
     fprintf(stderr, "Error: Failed to reallocate rows array for Darray.\n");
     return;
   }
   darray->array = temp_array;
 
-  // Case 1
-  if (new_rows > darray->rows) {
-    // New rows added. Allocate memory for them
-    for (int i = darray->rows; i < new_rows; i++) {
-      *(darray->array + i) = (char *)calloc(new_cols, sizeof(char));
-      if (*(darray->array + i) == NULL) {
-        fprintf(stderr, "Error: Failed to allocate memory for new row.\n");
-        return;
-      }
-    }
-  } else if (new_rows < darray->rows) { // B
-    // Rows removed, free the excess rows
-    for (int i = new_rows; i < darray->rows; i++) {
-      free(*(darray->array + i));
-      *(darray->array + i) = NULL;
-    }
-  }
-
-  /*Note: Cases 1 and 2 already took care of more rows vs. fewer rows.
-  So that cases 3 through 6 now consolidate to two cases:
-  A. more columns
-  B. fewer columns
-  */
-
-  // Case A
-  //  Adjust (reallocate??) all rows to the new column number
-  //  some of these may have already been done above but
-  //  doing them again won't have any effect
-  for (int i = 0; i < new_rows; i++) {
-    char *temp_row =
-        (char *)realloc(*(darray->array + i), new_cols * sizeof(char));
+  // allocate for columns for existing rows
+  for (int i = 0; i < (new_rows < darray->rows ? new_rows : darray->rows);
+       i++) {
+    char *temp_row = realloc(*(darray->array + i), new_cols * sizeof(char));
     if (temp_row == NULL) {
-      // Handle error: realloc failed. All bets are off.
-      fprintf(stderr, "Error: Failed to reallocate new row.\n");
+      fprintf(stderr, "Error: Failed to reallocate row %d.\n", i);
+      // Consider a more robust error recovery here, like attempting to free
+      // already reallocated rows and reverting to original state, or aborting.
       return;
     }
     *(darray->array + i) = temp_row;
 
-    // May have made row longer, realloc did not initialize new column elements
-    // fill them
+    // for more columns case, memset added row elements
     if (new_cols > darray->cols) {
+      // Only memset if columns are added and for existing data
       memset(*(darray->array + i) + darray->cols, 0, new_cols - darray->cols);
+    }
+  }
+
+  // allocate for columns in new rows
+  if (new_rows > darray->rows) {
+    for (int i = darray->rows; i < new_rows; i++) {
+      *(darray->array + i) =
+          calloc(new_cols, sizeof(char)); // calloc initializes to zero
+      if (*(darray->array + i) == NULL) {
+        fprintf(stderr, "Error: Failed to allocate memory for new row %d.\n",
+                i);
+        // Important: Clean up partial allocations before returning!
+        // This cleanup for resize is much more complex than init.
+        // For simplicity, for now, we'll just return.
+        return;
+      }
+    }
+  } else if (new_rows < darray->rows) { // free up "cut off" rows
+    for (int i = new_rows; i < darray->rows; i++) {
+      free(*(darray->array + i));
+      *(darray->array + i) = NULL; // Set to NULL after freeing
     }
   }
 
   darray->rows = new_rows;
   darray->cols = new_cols;
+}
+
+void dset(Darray *darray, int row, int col, char val) {
+  if (darray == NULL || row > darray->rows || col > darray->cols) {
+    fprintf(stderr, "Trying to set beyond the bounds of the 2D array.\n");
+    return;
+  }
+
+  char **temp_row;
+  char *temp_col;
+  for (int i = 0; i < darray->rows; i++) {
+    temp_row = darray->array + i;
+  }
+  if (temp_row == NULL) {
+    fprintf(stderr, "In dset(), setting to NULL row pointer.\n");
+    return;
+  }
+
+  for (int j = 0; j < darray->cols; j++) {
+    temp_col = (*temp_row) + j;
+  }
+  if (temp_col == NULL) {
+    fprintf(stderr, "In dset(), setting to NULL col pointer.\n");
+    return;
+  }
+
+  *temp_col = val;
+}
+
+void dget(Darray *darray, int row, int col, char *val) {
+  if (darray == NULL || row > darray->rows || col > darray->cols) {
+    fprintf(stderr, "Trying to get beyond the bounds of the 2D array.\n");
+    return;
+  }
+
+  char **temp_row;
+  char *temp_col;
+  for (int i = 0; i < darray->rows; i++) {
+    temp_row = darray->array + i;
+  }
+  if (temp_row == NULL) {
+    fprintf(stderr, "In dget(), getting from NULL row pointer.\n");
+    return;
+  }
+
+  for (int j = 0; j < darray->cols; j++) {
+    temp_col = (*temp_row) + j;
+  }
+  if (temp_col == NULL) {
+    fprintf(stderr, "In dget(), getting from NULL col pointer.\n");
+    return;
+  }
+
+  *val = *temp_col;
 }
 
 /*
